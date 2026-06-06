@@ -13,10 +13,11 @@ jobs:
       - name: Set up Xcode Version
         run: sudo xcode-select -s /Applications/Xcode_15.4.app
 
-      - name: Compile Native iOS Application
+      - name: Auto-Detect Project and Build
         run: |
-          xcodebuild -project "iOS-SmartWebView.xcodeproj" \
-                     -scheme "iOS-SmartWebView" \
+          # Automatically detects the target project structure and compiles it cleanly
+          xcodebuild -workspace *.xcworkspace 2>/dev/null || xcodebuild -project *.xcodeproj \
+                     -alltargets \
                      -configuration Release \
                      -sdk iphoneos \
                      CODE_SIGNING_ALLOWED=NO \
@@ -25,7 +26,7 @@ jobs:
       - name: Package App Binary into IPA
         run: |
           mkdir -p Payload
-          cp -r build/Release-iphoneos/iOS-SmartWebView.app Payload/ || cp -r build/Release-iphoneos/*.app Payload/
+          cp -r build/Release-iphoneos/*.app Payload/ 2>/dev/null || cp -r ~/Library/Developer/Xcode/DerivedData/*/Build/Products/Release-iphoneos/*.app Payload/
           zip -r Synopus.ipa Payload
 
       - name: Upload Completed App File
